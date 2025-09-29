@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GietYchat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    // 🔑 Supabase Config
+    const SUPABASE_URL = "https://ixnkzidifozvneipahns.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4bmt6aWRpZm96dm5laXBhaG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTQ3OTcsImV4cCI6MjA3Mzk3MDc5N30.bCBZ1Z63tkEwvHduujviTHH2k3fMtSX1BMn2c250OWw";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ✅ Global Vars
+    let started = false;
+    let view = "dashboard";
+    let user = null;
+    let authView = "login";
+    let publicMessages = [];
+    let privateMessages = [];
+    let createdRooms = [];
+    let room = null;
+
+    // Start app
+    window.onload = () => {
+      document.getElementById("getStarted").onclick = () => {
+        started = true;
+        document.getElementById("welcomeScreen").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+        render();
+      };
+      render();
+      fetchMessages(); // 🔄 Load old messages from DB
+    };
+
+    // ------------------ AUTH ------------------
+    async function handleAuth() {
+      let email = document.getElementById("authEmail")?.value || "";
+      let password = document.getElementById("authPassword")?.value || "";
+      let name = document.getElementById("authName")?.value || "";
+
+      try {
+        if (authView === "register") {
+          let { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { name } }
+          });
+          if (error) throw error;
+          alert("✅ Registered! Please check your email to confirm.");
+        } else if (authView === "login") {
+          let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          user = data.user;
+          alert(`✅ Logged in as ${user.email}`);
+        } else if (authView === "forgot") {
+          let { error } = await supabase.auth.resetPasswordForEmail(email);
+          if (error) throw error;
+          alert("📩 Password reset link sent!");
+        }
+      } catch (err) {
+        alert("❌ Error: " + err.message);
+      }
+      render();
+    }
+
+    // ------------------ PUBLIC CHAT ------------------
+    async function fetchMessages() {
+      let { data, error } = await supabase.from("messages").select("*").order("created_at", { ascending: true });
+      if (!error && data) {
+        publicMessages = data;
+        render();
+      }
+    }
+
+    async function sendMessage(type) {
+      if (!user) {
+        alert("Please login first!");
+        return;
+      }
+
+      if (type === "public") {
+        let input = document.getElementById("publicInput");
+        if (!input.value.trim()) return;
+
+        let { error } = await supabase.from("messages").insert([
+          { sender: user.email, text: input.value }
+        ]);
+        if (!error) {
+          input.value = "";
+          fetchMessages(); // refresh
+        }
+      } else if (type === "private") {
+        let input = document.getElementById("privateInput");
+        if (!input.value.trim() || !room) return;
+        privateMessages.push({ id: Date.now(), text: input.value, sender: user.email, roomId: room });
+        input.value = "";
+        render();
+      }
+    }
+
+    // ------------------ PRIVATE ROOM ------------------
+    function createRoom() {
+      let pass = document.getElementById("roomPassword").value;
+      if (!pass.trim()) return;
+      let newRoomId = Math.floor(10000 + Math.random() * 90000).toString();
+      createdRooms.push({ id: newRoomId, password: pass });
+      room = newRoomId;
+      alert(`Room created with ID: ${newRoomId}`);
+      render();
+    }
+
+    function joinRoom() {
+      let roomId = document.getElementById("joinRoomId").value;
+      let pass = document.getElementById("joinRoomPassword").value;
+      let found = createdRooms.find(r => r.id === roomId && r.password === pass);
+      if (found) {
+        room = found.id;
+        alert(`Joined room ${room}`);
+      } else {
+        alert("Room not found");
+      }
+      render();
+    }
+
+    function leaveRoom() {
+      room = null;
+      privateMessages = [];
+      alert("You left the room");
+      render();
+    }
+
+    // ------------------ RENDER ------------------
+    function setView(v) {
+      view = v;
+      render();
+    }
+
+    function setAuthView(v) {
+      authView = v;
+      render();
+    }
+
+    function render() {
+      // Navbar active
+      ["btnDashboard", "btnAccount", "btnPublic", "btnPrivate"].forEach(btn => {
+        let el = document.getElementById(btn);
+        if (!el) return;
+        el.classList.remove("bg-orange-500");
+        el.classList.add("bg-gray-700");
+      });
+      if (view === "dashboard") document.getElementById("btnDashboard").classList.add("bg-orange-500");
+      if (view === "account") document.getElementById("btnAccount").classList.add("bg-orange-500");
+      if (view === "public") document.getElementById("btnPublic").classList.add("bg-orange-500");
+      if (view === "private") document.getElementById("btnPrivate").classList.add("bg-orange-500");
+
+      // Views
+      ["dashboardView", "accountView", "publicView", "privateView"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById(view + "View").classList.remove("hidden");
+
+      // Dashboard
+      if (user) {
+        document.getElementById("userInfo").classList.remove("hidden");
+        document.getElementById("userInfo").innerHTML = `
+          <p><span class="text-orange-400">Email:</span> ${user.email}</p>`;
+        document.getElementById("loginInfo").classList.add("hidden");
+      } else {
+        document.getElementById("userInfo").classList.add("hidden");
+        document.getElementById("loginInfo").classList.remove("hidden");
+      }
+
+      // Account
+      if (!user) {
+        document.getElementById("authSection").classList.remove("hidden");
+        document.getElementById("alreadyLogged").classList.add("hidden");
+        let fields = "";
+        if (authView === "register") {
+          fields += `<input id="authName" type="text" placeholder="Full Name" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+          fields += `<input id="authEmail" type="email" placeholder="Email" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+          fields += `<input id="authPassword" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+        } else if (authView === "login") {
+          fields += `<input id="authEmail" type="email" placeholder="Email" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+          fields += `<input id="authPassword" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+        } else if (authView === "forgot") {
+          fields += `<input id="authEmail" type="email" placeholder="Enter your email" class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">`;
+        }
+        document.getElementById("authFields").innerHTML = fields;
+        document.getElementById("authBtn").innerText =
+          authView === "login" ? "Login" : authView === "register" ? "Register" : "Send Reset Link";
+      } else {
+        document.getElementById("authSection").classList.add("hidden");
+        document.getElementById("alreadyLogged").classList.remove("hidden");
+        document.getElementById("alreadyLogged").innerText = `You are logged in as ${user.email}`;
+      }
+
+      // Public Chat
+      let search = document.getElementById("searchUser")?.value.toLowerCase() || "";
+      let filtered = search
+        ? publicMessages.filter(m => m.sender?.toLowerCase().includes(search))
+        : publicMessages;
+      document.getElementById("publicChatBox").innerHTML = filtered
+        .map(m => `<div><span class="text-orange-400">${m.sender}:</span> ${m.text}</div>`).join("");
+
+      // Private Chat
+      if (room) {
+        document.getElementById("privateChatSection").classList.remove("hidden");
+        document.getElementById("roomOptions").classList.add("hidden");
+        document.getElementById("joinedRoom").innerText = room;
+        document.getElementById("privateChatBox").innerHTML =
+          privateMessages.filter(m => m.roomId === room)
+          .map(m => `<div><span class="text-orange-400">${m.sender}:</span> ${m.text}</div>`).join("");
+      } else {
+        document.getElementById("privateChatSection").classList.add("hidden");
+        document.getElementById("roomOptions").classList.remove("hidden");
+      }
+    }
+
+    // Expose functions
+    window.setView = setView;
+    window.setAuthView = setAuthView;
+    window.handleAuth = handleAuth;
+    window.sendMessage = sendMessage;
+    window.createRoom = createRoom;
+    window.joinRoom = joinRoom;
+    window.leaveRoom = leaveRoom;
+  </script>
+</head>
+
+<body class="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center p-6">
+
+  <!-- Welcome -->
+  <div id="welcomeScreen" class="w-full max-w-lg bg-gray-800 rounded-2xl shadow-lg p-10 text-center">
+    <h1 class="text-3xl font-bold mb-6 text-orange-400">Welcome to GietYchat</h1>
+    <p class="mb-6 text-gray-300">A modern chat platform for your college project.</p>
+    <button id="getStarted" class="bg-orange-500 px-6 py-3 rounded-xl text-lg font-semibold">Get Started</button>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="hidden w-full max-w-2xl bg-gray-800 rounded-2xl shadow-lg p-6">
+    <!-- Navigation -->
+    <div class="flex justify-between mb-4">
+      <button onclick="setView('dashboard')" id="btnDashboard" class="px-4 py-2 rounded-xl bg-orange-500">Dashboard</button>
+      <button onclick="setView('account')" id="btnAccount" class="px-4 py-2 rounded-xl bg-gray-700">Account</button>
+      <button onclick="setView('public')" id="btnPublic" class="px-4 py-2 rounded-xl bg-gray-700">Public Chat</button>
+      <button onclick="setView('private')" id="btnPrivate" class="px-4 py-2 rounded-xl bg-gray-700">Private Room</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardView">
+      <h1 class="text-2xl font-bold mb-4">User Dashboard</h1>
+      <div id="userInfo" class="bg-gray-700 rounded-lg p-4 mb-4 hidden"></div>
+      <p id="loginInfo" class="text-gray-400">Login first to see user information.</p>
+    </div>
+
+    <!-- Account -->
+    <div id="accountView" class="hidden">
+      <h1 class="text-2xl font-bold mb-4">Account</h1>
+      <div id="authSection" class="bg-gray-700 rounded-lg p-4 mb-4">
+        <div class="flex gap-2 mb-3">
+          <button onclick="setAuthView('login')" id="loginTab" class="px-3 py-1 rounded bg-orange-500">Login</button>
+          <button onclick="setAuthView('register')" id="registerTab" class="px-3 py-1 rounded bg-gray-600">Register</button>
+          <button onclick="setAuthView('forgot')" id="forgotTab" class="px-3 py-1 rounded bg-gray-600">Forgot Password</button>
+        </div>
+        <div id="authFields"></div>
+        <button onclick="handleAuth()" id="authBtn" class="w-full bg-orange-500 py-2 rounded-lg">Login</button>
+      </div>
+      <p id="alreadyLogged" class="text-gray-400 hidden"></p>
+    </div>
+
+    <!-- Public Chat -->
+    <div id="publicView" class="hidden">
+      <h1 class="text-2xl font-bold mb-4">Public Chat</h1>
+      <input type="text" id="searchUser" placeholder="Search by username..."
+        class="w-full px-3 py-2 rounded-lg bg-gray-700 mb-3" oninput="render()">
+      <div id="publicChatBox" class="border border-gray-700 rounded-lg h-64 overflow-y-auto p-3 mb-4 bg-gray-900"></div>
+      <div class="flex gap-2">
+        <input id="publicInput" placeholder="Type a message..."
+          class="flex-1 px-3 py-2 rounded-lg bg-gray-700 focus:outline-none">
+        <button onclick="sendMessage('public')" class="bg-orange-500 px-4 py-2 rounded-lg">Send</button>
+      </div>
+    </div>
+
+    <!-- Private Chat -->
+    <div id="privateView" class="hidden">
+      <h1 class="text-2xl font-bold mb-4">Private Room</h1>
+      <div id="privateChatSection" class="hidden">
+        <p class="mb-2">Joined room: <span id="joinedRoom" class="text-orange-400"></span></p>
+        <button onclick="leaveRoom()" class="mb-4 bg-red-500 px-4 py-2 rounded-lg">Leave Room</button>
+        <div id="privateChatBox" class="border border-gray-700 rounded-lg h-64 overflow-y-auto p-3 mb-4 bg-gray-900"></div>
+        <div class="flex gap-2">
+          <input id="privateInput" placeholder="Type a message..."
+            class="flex-1 px-3 py-2 rounded-lg bg-gray-700 focus:outline-none">
+          <button onclick="sendMessage('private')" class="bg-orange-500 px-4 py-2 rounded-lg">Send</button>
+        </div>
+      </div>
+
+      <div id="roomOptions" class="space-y-4">
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h2 class="text-xl mb-2">Create a Room</h2>
+          <input type="password" id="roomPassword" placeholder="Set Room Password"
+            class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">
+          <button onclick="createRoom()" class="bg-orange-500 px-4 py-2 rounded-lg w-full">Create Room</button>
+        </div>
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h2 class="text-xl mb-2">Join a Room</h2>
+          <input type="text" id="joinRoomId" placeholder="Enter Room ID"
+            class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">
+          <input type="password" id="joinRoomPassword" placeholder="Enter Room Password"
+            class="w-full px-3 py-2 rounded-lg bg-gray-800 mb-2">
+          <button onclick="joinRoom()" class="bg-orange-500 px-4 py-2 rounded-lg w-full">Join Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
