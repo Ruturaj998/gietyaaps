@@ -3,230 +3,180 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>GietYchat - Modern Chat Platform</title>
+<title>GietYchat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* === CSS === */
-body{font-family:'Segoe UI',Arial,sans-serif;margin:0;background:#202634;color:#fff;}
-header{background:linear-gradient(to right,#e95c19,#fa8337);padding:0 0 12px 0;box-shadow:0 3px 20px rgba(0,0,0,0.08);}
-.container{max-width:800px;margin:0 auto;padding:0 16px;}
-.header-flex{display:flex;justify-content:space-between;align-items:flex-end;height:85px;}
-.brand{display:flex;align-items:center;}
-.brand-icon{font-size:36px;margin-right:12px;}
-.brand-title{font-weight:600;font-size:24px;color:#fff;}
-.brand-subtitle{font-size:14px;color:#ffe1cd;margin-top:-6px;}
-nav{display:flex;gap:8px;}
-.nav-btn{background:#2e354b;color:#fff;border:none;outline:none;padding:7px 18px;font-size:15px;border-radius:8px 8px 0 0;cursor:pointer;margin-top:22px;transition:background 0.2s,color 0.2s;}
-.nav-btn.active,.nav-btn:hover{background:#ff7537;color:#fff;}
-.page-section{min-height:500px;display:flex;align-items:center;justify-content:center;}
-.card{background:#232b3f;box-shadow:0 4px 18px rgba(0,0,0,0.14);border-radius:16px;padding:32px 36px;max-width:470px;width:100%;}
-.welcome-card{text-align:center;}
-.welcome-icon{font-size:48px;margin-bottom:8px;color:#ff8337;}
-.welcome-card h2{color:#ff7537;font-size:28px;margin:0 0 12px 0;font-weight:600;}
-.welcome-card p{color:#d0d5e1;font-size:15px;margin-bottom:24px;}
-.primary-btn{background:#ff7537;color:#fff;border:none;padding:11px 28px;font-size:16px;border-radius:8px;cursor:pointer;font-weight:500;margin-top:4px;transition:background 0.18s;}
-.primary-btn:hover{background:#e95c19;}
-.dashboard-card{max-width:700px;}
-.user-welcome{font-size:19px;margin-bottom:12px;font-weight:500;color:#06cc54;display:flex;align-items:center;}
-.green-dot{height:10px;width:10px;border-radius:50%;background:#06cc54;margin-right:8px;display:inline-block;}
-.user-info{display:flex;justify-content:space-between;background:#1b2132;color:#ffe1cd;padding:10px 22px;border-radius:7px;margin-bottom:28px;font-size:14px;}
-.online-status{color:#19fa98;font-weight:500;}
-.dashboard-features{display:flex;gap:23px;margin-top:12px;}
-.feature{background:#232c43;border-radius:8px;flex:1;text-align:center;padding:28px 8px;}
-.feature-public span{color:#1a96f8;font-size:28px;}
-.feature-private span{color:#b569ff;font-size:28px;}
-.feature-secure span{color:#37e26f;font-size:28px;}
-.feature small{color:#abb6c6;font-size:12px;display:block;margin-top:7px;}
-.account-card{max-width:580px;}
-.account-title{font-size:22px;font-weight:500;color:#ffa73a;margin-bottom:22px;display:flex;align-items:center;}
-.tabs{margin-bottom:16px;display:flex;}
-.tab-btn{flex:1;background:#2b3144;color:#d1dfff;border:none;font-size:16px;padding:10px 0;margin:0;border-radius:8px 8px 0 0;cursor:pointer;transition:background 0.16s;}
-.tab-btn.active,.tab-btn:hover{background:#ff7c2e;color:#fff;}
-.account-form{display:flex;flex-direction:column;gap:14px;margin-bottom:0;}
-.account-form input{background:#181c28;border:none;border-radius:7px;color:#fff;padding:10px;font-size:15px;margin-bottom:2px;}
-.account-form input:focus{outline:2px solid #ff7537;}
-.account-form button{margin-top:0;}
-.private-room-card{max-width:720px;}
-.private-title{font-size:22px;color:#ffa73a;font-weight:500;margin-bottom:17px;}
-.private-flex{display:flex;gap:32px;justify-content:space-between;}
-.private-block{flex:1;background:#262e43;border-radius:11px;padding:21px 20px;min-width:220px;display:flex;flex-direction:column;align-items:center;}
-.private-block-title{font-size:18px;margin-bottom:13px;font-weight:500;}
-.green-text{color:#37e26f;}
-.blue-text{color:#1a96f8;}
-.private-block input{background:#1b2132;color:#fff;border:none;border-radius:7px;font-size:15px;padding:10px;margin-bottom:12px;width:100%;}
-.green-btn{background:#37e26f;color:#fff;border:none;font-size:16px;padding:9px 0;width:100%;border-radius:7px;cursor:pointer;margin-top:7px;font-weight:500;}
-.green-btn:hover{background:#20b156;}
-.blue-btn{background:#2096f8;color:#fff;border:none;font-size:16px;padding:9px 0;width:100%;border-radius:7px;cursor:pointer;margin-top:7px;font-weight:500;}
-.blue-btn:hover{background:#047de5;}
-.chat-card{max-width:560px;}
-.chat-title{font-size:22px;color:#ffa73a;font-weight:500;margin-bottom:13px;}
-.chat-messages{background:#1b2132;min-height:100px;border-radius:7px;margin-bottom:16px;padding:12px;display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;}
-.chat-bubble{background:#2e354b;padding:8px 12px;border-radius:12px;max-width:80%;word-wrap:break-word;}
-.chat-bubble.self{background:#ff7537;color:#fff;margin-left:auto;}
-.chat-placeholder{color:#9ebbe9;text-align:center;margin-top:10px;font-size:15.5px;}
-.chat-placeholder-icon{font-size:36px;color:#ff7537;}
-.chat-input{display:flex;gap:7px;}
-.chat-input input{flex:1;background:#181c28;color:#fff;border:none;border-radius:7px;padding:10px 13px;font-size:15px;}
-@media(max-width:900px){.dashboard-features,.private-flex{flex-direction:column;gap:20px}.dashboard-card,.private-room-card{padding:21px 3vw;}}
-@media(max-width:650px){.header-flex{flex-direction:column;align-items:flex-start;height:auto;}.container{width:97vw;}.dashboard-features,.private-flex{flex-direction:column;}.feature,.private-block{padding:20px 5vw;}.card{padding:22px 7vw;}}
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;}
+.container { width: 100%; max-width: 500px; margin-top: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 20px;}
+h2{text-align:center;}
+input, button{width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc;}
+button{background:#4CAF50; color:white; cursor:pointer; border:none;}
+button:hover{background:#45a049;}
+.chat-box{border:1px solid #ccc; height:300px; overflow-y:auto; margin-bottom:10px; padding:10px; background:#fafafa;}
+.chat-bubble{margin:5px 0; padding:8px 10px; border-radius:8px; background:#e0e0e0;}
+.chat-bubble.self{background:#4caf50; color:white; text-align:right;}
 </style>
 </head>
 <body>
+<div class="container">
+  <h2>🚀 GietYchat</h2>
 
-<header>
-<div class="container header-flex">
-<div class="brand"><span class="brand-icon">💬</span><div><div class="brand-title">GietYchat</div><div class="brand-subtitle">Modern Chat Platform</div></div></div>
-<nav>
-<button class="nav-btn" id="nav-dashboard">Dashboard</button>
-<button class="nav-btn" id="nav-account">Account</button>
-<button class="nav-btn" id="nav-public-chat">Public Chat</button>
-<button class="nav-btn" id="nav-private-room">Private Room</button>
-</nav>
-</div>
-</header>
+  <!-- Auth Section -->
+  <div id="auth-section">
+    <input type="email" id="email" placeholder="Email"/>
+    <input type="password" id="password" placeholder="Password"/>
+    <button id="loginBtn">Login</button>
+    <button id="signupBtn">Register</button>
+  </div>
 
-<main>
-<section id="page-welcome" class="page-section">
-<div class="card welcome-card">
-<div class="welcome-icon">💬💬</div>
-<h2>Welcome to GietYchat</h2>
-<p>Modern, secure chat platform. Connect with friends publicly or privately.</p>
-<button class="primary-btn" id="btn-get-started">Get Started</button>
-</div>
-</section>
+  <!-- Chat Section -->
+  <div id="chat-section" style="display:none;">
+    <p>Welcome, <span id="user-email"></span></p>
+    <button id="logoutBtn">Logout</button>
 
-<!-- Dashboard -->
-<section id="page-dashboard" class="page-section" style="display:none;">
-<div class="card dashboard-card">
-<div class="user-welcome"><span class="green-dot"></span> Welcome, <span id="user-name">User</span>!</div>
-<div class="user-info"><span>Email: <span id="user-email">user@example.com</span></span> <span>Status: <span class="online-status">Online</span></span></div>
-<div class="dashboard-features">
-<div class="feature feature-public"><span>🌐</span><div>Public Chat</div><small>Join global chat</small></div>
-<div class="feature feature-private"><span>🔒</span><div>Private Rooms</div><small>Create/join secure rooms</small></div>
-<div class="feature feature-secure"><span>🛡</span><div>Secure</div><small>End-to-end protection</small></div>
-</div>
-</div>
-</section>
+    <h3>🌍 Public Chat</h3>
+    <div class="chat-box" id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message..."/>
+    <button id="sendBtn">Send</button>
 
-<!-- Account -->
-<section id="page-account" class="page-section" style="display:none;">
-<div class="card account-card">
-<div class="account-title">Account</div>
-<div class="tabs">
-<button class="tab-btn" id="tab-login">Login</button>
-<button class="tab-btn" id="tab-register">Register</button>
-</div>
-<form id="form-login" class="account-form">
-<input type="email" placeholder="Email Address" required />
-<input type="password" placeholder="Password" required />
-<button class="primary-btn" type="submit">Login</button>
-</form>
-<form id="form-register" class="account-form" style="display:none;">
-<input type="text" placeholder="Full Name" required />
-<input type="email" placeholder="Email Address" required />
-<input type="password" placeholder="Password" required />
-<button class="primary-btn" type="submit">Register</button>
-</form>
-</div>
-</section>
+    <h3>🔒 Private Room</h3>
+    <input type="text" id="roomId" placeholder="Room ID"/>
+    <input type="password" id="roomPassword" placeholder="Room Password"/>
+    <button id="createRoomBtn">Create Room</button>
+    <button id="joinRoomBtn">Join Room</button>
 
-<!-- Public Chat -->
-<section id="page-public-chat" class="page-section" style="display:none;">
-<div class="card chat-card">
-<div class="chat-title">Public Chat</div>
-<div class="chat-messages" id="public-messages"><div class="chat-placeholder"><span class="chat-placeholder-icon">💬</span>No messages yet.</div></div>
-<div class="chat-input"><input type="text" placeholder="Type your message..." id="public-msg-input"/><button class="primary-btn" id="public-send-btn">Send</button></div>
+    <div id="privateRoom" style="display:none;">
+      <h4>Private Room Messages</h4>
+      <div class="chat-box" id="privateMessages"></div>
+      <input type="text" id="privateInput" placeholder="Type private message..."/>
+      <button id="privateSend">Send Private</button>
+    </div>
+  </div>
 </div>
-</section>
-
-<!-- Private Room -->
-<section id="page-private-room" class="page-section" style="display:none;">
-<div class="card private-room-card">
-<div class="private-title">Private Room</div>
-<div class="private-flex">
-<div class="private-block">
-<div class="private-block-title green-text">Create a Room</div>
-<input type="text" placeholder="Room ID" id="create-room-id"/>
-<input type="password" placeholder="Set Room Password" id="create-room-password"/>
-<button class="green-btn" id="btn-create-room">Create Room</button>
-</div>
-<div class="private-block">
-<div class="private-block-title blue-text">Join a Room</div>
-<input type="text" placeholder="Room ID" id="join-room-id"/>
-<input type="password" placeholder="Enter Room Password" id="join-room-password"/>
-<button class="blue-btn" id="btn-join-room">Join Room</button>
-<div id="private-chat-container" style="margin-top:12px;display:none;">
-<div class="chat-messages" id="private-messages" style="max-height:200px;overflow-y:auto;"></div>
-<div class="chat-input"><input type="text" placeholder="Type message..." id="private-msg-input"/><button class="primary-btn" id="private-send-btn">Send</button></div>
-</div>
-</div>
-</div>
-</div>
-</section>
 
 <script>
-// === Supabase Init ===
-const SUPABASE_URL = 'https://ioyqbbvkmtrolmqpnse.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlveXFiYnZrbW90cm9sbXFwbnNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMzA4NDgsImV4cCI6MjA3NDcwNjg0OH0._OIFa6RM0A5joyykPebhW1MFuHVgZrHbwYK47sp2ybk';
-const supabase = Supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  // ✅ Supabase Config
+  const SUPABASE_URL = "https://ioyqbbvkmotrolmqpnse.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlveXFiYnZrbW90cm9sbXFwbnNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMzA4NDgsImV4cCI6MjA3NDcwNjg0OH0._OIFa6RM0A5joyykPebhW1MFuHVgZrHbwYK47sp2ybk";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// === SPA Navigation ===
-const sectionIds=["page-welcome","page-dashboard","page-account","page-public-chat","page-private-room"];
-const navButtons={"nav-dashboard":"page-dashboard","nav-account":"page-account","nav-public-chat":"page-public-chat","nav-private-room":"page-private-room"};
-function switchSection(targetId){sectionIds.forEach(id=>{document.getElementById(id).style.display=id===targetId?"flex":"none";});document.querySelectorAll('nav .nav-btn').forEach(btn=>btn.classList.remove('active'));for(const [btnId,secId] of Object.entries(navButtons)){if(secId===targetId) document.getElementById(btnId).classList.add('active');}}
-document.getElementById("btn-get-started").onclick=()=>{switchSection("page-account");document.getElementById("nav-account").classList.add('active');};
-for(const [btnId,secId] of Object.entries(navButtons)){document.getElementById(btnId).onclick=()=>switchSection(secId);}
+  const authSection = document.getElementById("auth-section");
+  const chatSection = document.getElementById("chat-section");
+  const userEmailSpan = document.getElementById("user-email");
 
-// === Account Tabs ===
-const tabData=[{btn:"tab-login",form:"form-login"},{btn:"tab-register",form:"form-register"}];
-tabData.forEach(({btn,form})=>{document.getElementById(btn).onclick=()=>{tabData.forEach(({btn:b,form:f})=>{document.getElementById(b).classList.remove('active');document.getElementById(f).style.display="none";});document.getElementById(btn).classList.add('active');document.getElementById(form).style.display="flex";};});
-document.getElementById("tab-login").classList.add('active');
+  const loginBtn = document.getElementById("loginBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-// === Login/Register ===
-const formLogin=document.getElementById("form-login");
-const formRegister=document.getElementById("form-register");
-formLogin.onsubmit=async e=>{e.preventDefault();const email=formLogin[0].value,password=formLogin[1].value;const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error) alert(error.message); else {alert("Login successful!");document.getElementById("user-name").innerText=email.split("@")[0];document.getElementById("user-email").innerText=email;switchSection("page-dashboard");}};
-formRegister.onsubmit=async e=>{e.preventDefault();const fullName=formRegister[0].value,email=formRegister[1].value,password=formRegister[2].value;const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:fullName}}});if(error) alert(error.message); else{alert("Registration successful!");formRegister.reset();switchSection("page-account");}};
+  const messageInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const messagesDiv = document.getElementById("messages");
 
-// === Public Chat ===
-const publicInput=document.getElementById("public-msg-input");
-const publicSend=document.getElementById("public-send-btn");
-const publicMessages=document.getElementById("public-messages");
+  const roomIdInput = document.getElementById("roomId");
+  const roomPassInput = document.getElementById("roomPassword");
+  const createRoomBtn = document.getElementById("createRoomBtn");
+  const joinRoomBtn = document.getElementById("joinRoomBtn");
+  const privateRoomDiv = document.getElementById("privateRoom");
+  const privateMessagesDiv = document.getElementById("privateMessages");
+  const privateInput = document.getElementById("privateInput");
+  const privateSend = document.getElementById("privateSend");
 
-async function loadPublicMessages(){
-let {data:messages}=await supabase.from('messages').select('*').order('created_at',{ascending:true});
-publicMessages.innerHTML=messages.length?messages.map(m=>`<div class="chat-bubble${m.username===document.getElementById("user-email").innerText?" self":""}"><strong>${m.username}</strong>: ${m.message}</div>`).join(''):`<div class="chat-placeholder"><span class="chat-placeholder-icon">💬</span>No messages yet.</div>`;
-publicMessages.scrollTop=publicMessages.scrollHeight;
-}
-publicSend.onclick=async()=>{if(!publicInput.value.trim()) return;await supabase.from('messages').insert([{username:document.getElementById("user-email").innerText,message:publicInput.value}]);publicInput.value="";loadPublicMessages();}
-supabase.from('messages').on('INSERT',payload=>{loadPublicMessages();}).subscribe();
-loadPublicMessages();
+  let currentUser = null;
+  let currentRoomId = null;
 
-// === Private Rooms ===
-const btnCreate=document.getElementById("btn-create-room");
-const btnJoin=document.getElementById("btn-join-room");
-const privateContainer=document.getElementById("private-chat-container");
-const privateMessages=document.getElementById("private-messages");
-const privateInput=document.getElementById("private-msg-input");
-const privateSend=document.getElementById("private-send-btn");
-let currentRoomId="";
-btnCreate.onclick=async()=>{
-const rid=document.getElementById("create-room-id").value.trim();
-const pwd=document.getElementById("create-room-password").value.trim();
-if(!rid||!pwd) return alert("Enter Room ID and Password");
-const {error}=await supabase.from('private_rooms').insert([{room_id:rid,password:pwd,messages:[]}]);
-if(error) alert(error.message); else{alert("Room created!");document.getElementById("create-room-id").value="";document.getElementById("create-room-password").value="";currentRoomId=rid;privateContainer.style.display="block";loadPrivateMessages();switchSection("page-private-room");}};
-btnJoin.onclick=async()=>{
-const rid=document.getElementById("join-room-id").value.trim();
-const pwd=document.getElementById("join-room-password").value.trim();
-if(!rid||!pwd) return alert("Enter Room ID and Password");
-const {data,error}=await supabase.from('private_rooms').select('*').eq('room_id',rid).single();
-if(error) return alert("Room not found"); if(data.password!==pwd) return alert("Wrong password");
-currentRoomId=rid;privateContainer.style.display="block";loadPrivateMessages();switchSection("page-private-room");};
-async function loadPrivateMessages(){if(!currentRoomId) return;
-const {data}=await supabase.from('private_rooms').select('*').eq('room_id',currentRoomId).single();
-if(data){privateMessages.innerHTML=data.messages.map(m=>`<div class="chat-bubble${m.username===document.getElementById("user-email").innerText?" self":""}"><strong>${m.username}</strong>: ${m.message}</div>`).join('');privateMessages.scrollTop=privateMessages.scrollHeight;}}
-privateSend.onclick=async()=>{if(!privateInput.value.trim()) return;if(!currentRoomId) return;const {data,error}=await supabase.from('private_rooms').select('*').eq('room_id',currentRoomId).single();if(!data) return alert("Room not found");data.messages.push({username:document.getElementById("user-email").innerText,message:privateInput.value});await supabase.from('private_rooms').update({messages:data.messages}).eq('room_id',currentRoomId);privateInput.value="";loadPrivateMessages();}
+  // 🔐 Auth
+  signupBtn.onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const { error } = await client.auth.signUp({ email, password });
+    if (error) alert(error.message);
+    else alert("Check email for confirmation!");
+  };
+
+  loginBtn.onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+    else {
+      currentUser = data.user;
+      userEmailSpan.innerText = currentUser.email;
+      authSection.style.display = "none";
+      chatSection.style.display = "block";
+      loadMessages();
+    }
+  };
+
+  logoutBtn.onclick = async () => {
+    await client.auth.signOut();
+    authSection.style.display = "block";
+    chatSection.style.display = "none";
+    currentUser = null;
+    currentRoomId = null;
+    privateRoomDiv.style.display = "none";
+  };
+
+  // 🌍 Public Chat
+  async function loadMessages() {
+    const { data, error } = await client.from("messages").select("*").order("id");
+    if (error) return console.error(error);
+    messagesDiv.innerHTML = data.map(m =>
+      `<div class="chat-bubble${m.username===currentUser.email?" self":""}">
+        <strong>${m.username}</strong>: ${m.message}
+      </div>`).join("");
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  sendBtn.onclick = async () => {
+    if (!messageInput.value.trim()) return;
+    await client.from("messages").insert([{ username: currentUser.email, message: messageInput.value }]);
+    messageInput.value = "";
+  };
+
+  // Realtime subscription
+  client.channel('public:messages')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+      loadMessages();
+    }).subscribe();
+
+  // 🔒 Private Room
+  createRoomBtn.onclick = async () => {
+    const rid = roomIdInput.value.trim();
+    const pwd = roomPassInput.value.trim();
+    if (!rid || !pwd) return alert("Enter Room ID and Password");
+    await client.from("private_rooms").insert([{ room_id: rid, password: pwd, messages: [] }]);
+    alert("Room created!");
+  };
+
+  joinRoomBtn.onclick = async () => {
+    const rid = roomIdInput.value.trim();
+    const pwd = roomPassInput.value.trim();
+    const { data, error } = await client.from("private_rooms").select("*").eq("room_id", rid).single();
+    if (error) return alert("Room not found");
+    if (data.password !== pwd) return alert("Wrong password");
+    currentRoomId = rid;
+    privateRoomDiv.style.display = "block";
+    loadPrivateMessages();
+  };
+
+  async function loadPrivateMessages() {
+    if (!currentRoomId) return;
+    const { data } = await client.from("private_rooms").select("*").eq("room_id", currentRoomId).single();
+    privateMessagesDiv.innerHTML = data.messages.map(m =>
+      `<div class="chat-bubble${m.username===currentUser.email?" self":""}">
+        <strong>${m.username}</strong>: ${m.message}
+      </div>`).join("");
+    privateMessagesDiv.scrollTop = privateMessagesDiv.scrollHeight;
+  }
+
+  privateSend.onclick = async () => {
+    if (!privateInput.value.trim()) return;
+    const { data } = await client.from("private_rooms").select("*").eq("room_id", currentRoomId).single();
+    data.messages.push({ username: currentUser.email, message: privateInput.value });
+    await client.from("private_rooms").update({ messages: data.messages }).eq("room_id", currentRoomId);
+    privateInput.value = "";
+    loadPrivateMessages();
+  };
 </script>
 </body>
 </html>
